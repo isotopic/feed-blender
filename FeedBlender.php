@@ -28,8 +28,8 @@ class FeedBlender{
 	// Facebook Token
 	private $token;
 
-	// The minimum interval between api requests, in seconds. 300 = 5 minutes.
-	private $checking_throttle = 3;
+	// The minimum interval between api requests, in seconds..
+	private $checking_throttle = 60;
 
 	// Used to log the time at the last request
 	private $date = NULL;	
