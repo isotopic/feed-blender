@@ -8,7 +8,6 @@
  *
  * @version 1.0
  * @author  Guilherme Cruz <guilhermecruz@gmail.com>
- * @license http://creativecommons.org/licenses/by-nc-sa/3.0/
 */
 
 class FeedBlender{
@@ -24,9 +23,6 @@ class FeedBlender{
 
 	// Facebook app_secret - The app secret for the client id above
 	private $app_secret;
-
-	// Facebook Token
-	private $token;
 
 	// The minimum interval between api requests, in seconds
 	private $checking_throttle = 60;
@@ -118,7 +114,7 @@ class FeedBlender{
 					$created_time = date("d M Y", strtotime($post->created_time));
 					$message = $post->message;
 					$image = $post->full_picture;
-					array_push($combined_posts, array('source'=>'facebook', 'link'=>$link, 'timestamp'=>$timestamp, 'created_time'=>$created_time, 'message'=>$message, 'image'=>$image));
+					array_push($combined_posts, array('source'=>'facebook', 'username'=>$this->facebook_username, 'link'=>$link, 'timestamp'=>$timestamp, 'created_time'=>$created_time, 'message'=>$message, 'image'=>$image));
 			}
 			if($a<count($instagram_posts->items)){
 				$post = $instagram_posts->items[$a];
@@ -127,55 +123,59 @@ class FeedBlender{
 					$created_time = date("d M Y", $post->created_time);
 					$message = $post->caption->text;
 					$image = $post->images->standard_resolution->url;
-					array_push($combined_posts, array('source'=>'instagram', 'link'=>$link, 'timestamp'=>$timestamp, 'created_time'=>$created_time, 'message'=>$message, 'image'=>$image));
+					array_push($combined_posts, array('source'=>'instagram', 'username'=>$this->instagram_username, 'link'=>$link, 'timestamp'=>$timestamp, 'created_time'=>$created_time, 'message'=>$message, 'image'=>$image));
 			}
 		}
-
 		$response = array('status'=>'success','message'=>'','data'=>$combined_posts);
 		return json_encode( $response , JSON_UNESCAPED_UNICODE);
+		exit;
 	}
-
 
 
 	private function getFacebookPosts(){
 		// Get a valid token
-		$token_request = curl_init(); 
-		curl_setopt($token_request, CURLOPT_URL, 'https://graph.facebook.com/v2.5/oauth/access_token?client_id='.$this->client_id.'&client_secret='.$this->app_secret.'&grant_type=client_credentials');
-		curl_setopt($token_request, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($token_request, CURLOPT_HEADER, false); 
-		curl_setopt($token_request, CURLOPT_VERBOSE, true);
-		$token_payload=curl_exec($token_request);
-		curl_close($token_request);
-		$token_payload = json_decode($token_payload, false);
+		$token_payload = $this->curlGet('https://graph.facebook.com/v2.5/oauth/access_token?client_id='.$this->client_id.'&client_secret='.$this->app_secret.'&grant_type=client_credentials');
 		$token = $token_payload->access_token;
-		// Error
 		if($token == NULL){
 			return json_encode(array( 'status'=>'error','message'=>'Token inválido','data'=>'' ), JSON_UNESCAPED_UNICODE);
 			exit;
 		}
 		// Get posts https://developers.facebook.com/docs/graph-api/reference/v2.5/post
-		$facebook_request = curl_init(); 
-		curl_setopt($facebook_request, CURLOPT_URL, 'https://graph.facebook.com/v2.5/'.$this->facebook_username.'/posts/?fields=id,link,created_time,caption,description,message,full_picture&access_token='.$token );
-		curl_setopt($facebook_request, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($facebook_request, CURLOPT_HEADER, false); 
-		curl_setopt($facebook_request, CURLOPT_VERBOSE, true);
-		$posts_payload = curl_exec($facebook_request);
-		curl_close($facebook_request);
-		return json_decode($posts_payload, false);
+		$facebook_posts = $this->curlGet('https://graph.facebook.com/v2.5/'.$this->facebook_username.'/posts/?fields=id,link,created_time,caption,description,message,full_picture&access_token='.$token );
+		return $facebook_posts;
 	}
 
 
 	private function getInstagramPosts(){
-		$instagram_request = curl_init(); 
-		curl_setopt($instagram_request, CURLOPT_URL, 'https://www.instagram.com/'.$this->instagram_username.'/media/');
-		curl_setopt($instagram_request, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($instagram_request, CURLOPT_HEADER, false); 
-		curl_setopt($instagram_request, CURLOPT_VERBOSE, true);
-		$instagram_posts = curl_exec($instagram_request);
-		curl_close($instagram_request);
-		return json_decode($instagram_posts, false);
+		$instagram_posts = $this->curlGet('https://www.instagram.com/'.$this->instagram_username.'/media/');
+		return $instagram_posts;
+	}
+
+
+	private function curlGet($url){
+		$curl = curl_init(); 
+		curl_setopt($curl, CURLOPT_URL, $url);
+		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($curl, CURLOPT_HEADER, false); 
+		curl_setopt($curl, CURLOPT_VERBOSE, true);
+		$curl_response = curl_exec($curl);
+		curl_close($curl);
+		return json_decode($curl_response, false);
 	}
 
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 ?>
