@@ -1,3 +1,4 @@
-SocialFeed.log
-SocialFeed.json
+.DS_Store
+FeedBlender.log
+FeedBlender.json
 test.php
