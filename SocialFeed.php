@@ -1,29 +1,38 @@
 <?php
-/**
-*
-* SocialFeed
-* 
-* Este programa gera um arquivo json alimentado regularmente por um feed do facebook e um do instagram.
-* Para os dados do instagram é necessário apenas um username.
-* Para a api do facebook são necessários um par api_secret e client_id, obtidos através de qualquer app registrado em:
-* https://developers.facebook.com/quickstarts/?platform=web
-*
-* Exemplo de uso:
-* 
-* require 'SocialFeed.php';
-* $social_feed = new SocialFeed(
-* 	array(
-* 		'client_id'=>'152123453345544',
-* 		'app_secret'=>'60asdgfac110d7b1234234241234a0d12e1a0a3420',
-* 		'facebook_username'=>'johndoe',
-* 		'instagram_username'=>'johnnydoe'
-* 	)
-* );
-* echo $social_feed->getFeed();
-* 
-*
-* @author Guilherme <guilhermecruz@gmail.com>
-*
+/*
+
+~ SocialFeed ~
+
+This class generates a cached json feed with content provided from any
+(public) Facebook account and from any (public) Instagram account.
+Both feeds are merged into an uniform json:
+
+{
+    "status":"success",
+    "message":"",
+    "data":[
+        {
+            "source":"facebook",
+            "link":"http://facebook.com/ubuntulinux/posts/10153694239668592",
+            "created_time":"10 Dec 2015",
+            "message":"GitHub Director of Community (and former Ubuntu Community Manager) Jono Bacon explains why you should go to #UbuCon in January. We can't help but agree.",
+            "image":"https://fbexternal-a.akamaihd.net/safe_image.php?d=AQBonXQFibLBUdJ7&url=http%3A%2F%2Fubucon.org%2Fmedia%2Fcms_page_media%2F1%2Fubucon-community.jpg"
+        },
+        {
+            "source":"instagram",
+            "link":"https://www.instagram.com/p/_KQgGjPMyV/",
+            "created_time":"11 Dec 2015",
+            "message":"The "bath" process. #arduino #arduinoorg #arduinoteam #onthego #strambino #production #pcb #board #quality #madeinitaly #withlove",
+            "image":"https://scontent-mia1-1.cdninstagram.com/hphotos-xft1/t51.2885-15/s640x640/sh0.08/e35/12356440_765574983571153_147890575_n.jpg"
+        },
+
+
+A valid pair client_id/app_secret must be provided.
+These credentials can be acquired upon registration of any app in this page:
+https://developers.facebook.com/quickstarts/?platform=web
+
+Guilherme <guilhermecruz@gmail.com>
+
 */
 
 
@@ -31,23 +40,26 @@ class SocialFeed{
 
 
 	/** 
-	* @var string FACEBOOK Profile de onde os posts devem ser adquiridos.
+	* @var string Facebook content provider. 
 	*/
 	private $facebook_username = '';
+
 	/** 
-	* @var string INSTAGRAM Profile de onde os posts devem ser adquiridos.
+	* @var string Instagram content provider. 
 	*/
 	private $instagram_username = '';
 
 
 	/** 
-	* @var string FACEBOOK client_id - Pode ser de qualquer app registrada no facebook developers.
+	* @var string Facebook client_id - From any app registered on Facebook Developers.
 	*/
 	private $client_id = '';
+
 	/** 
-	* @var string FACEBOOK app_secret - Pode ser de qualquer app registrada no facebook developers.
+	* @var string Facebook app_secret - The app secret from the previous client id.
 	*/
 	private $app_secret = '';
+
 	/** 
 	* @var string Facebook Token
 	*/
@@ -55,29 +67,33 @@ class SocialFeed{
 
 
 	/**
-	* @var int Intervalo mínimo entre requisições nas apis (segundos)
+	* @var int Minimum interval between api requests. I'd say 10 minutes (600 secs) are a pretty good bet.
 	*/
-	private $checking_throttle = 30;
+	private $checking_throttle = 600;
+
 	/** 
-	* @var array Objeto date para nomear os arquivo de log
+	* @var array Used to log the time at the last request.
 	*/
 	private $date = NULL;	
+
 	/** 
-	* @var array Nome do arquivo onde será logado o momento da última atualização do feed
+	* @var array The file to log these times.
 	*/
-	private $log_file = "SocialFeed.log";	
+	private $log_file = "SocialFeed.log";
+
 	/** 
-	* @var array Nome do arquivo onde será cacheado o conteúdo do feed construído
+	* @var array File to cache the feed's content.
 	*/
 	private $json_file = "SocialFeed.json";
 
 
 
 	/** 
-	* Instancia e define o fuso horário
+	* Constructor
 	*/
 	public function __construct($args){
 		date_default_timezone_set('America/Sao_Paulo');
+		setlocale(LC_ALL, 'pt_BR');
 		$this->date = getdate();
 		$this->client_id = $args['client_id'];
 		$this->app_secret = $args['app_secret'];
@@ -88,21 +104,22 @@ class SocialFeed{
 
 
 	/**
-	* Chamada principal da classe
 	* 
-	* Retorna string json com os feeds combinados.
+	* Just gets the merged content. 
+	* Content comes from cache or from new requests,
+	* depending on $this->checking_throttle.
 	*
 	* @return String
 	*/
 	public function getFeed(){
 
-		if( $this->hasWaited() ){
-			//Atualizar feeds
-			$feed = $this->requestAPIS();
+		if( $this->cacheHasExpired() ){
+			// Reloads content from the APIs
+			$feed = $this->loadContentFromAPIs();
 			$this->writeLogAndCache($feed);
 			return $feed;
 		}else{
-			//Retorna feed cacheado
+			// Returns local feed cache
 			return file_get_contents($this->json_file);
 		}
 
@@ -112,19 +129,19 @@ class SocialFeed{
 
 	/**
 	* 
-	* Acessa as apis e retorna string json contendo os dados das duas fontes.
+	* Load and merge content from the apis.
 	*
 	* @return String
 	*/
-	private function requestAPIS(){
+	private function loadContentFromAPIs(){
 
 		$facebook_posts = "";
 		$instagram_posts = "";
 		$combined_posts = array();
 
-	/* ------------------------- FACEBOOK POSTS --------------------------*/
+		/* ------------------------- FACEBOOK POSTS --------------------------*/
 		
-		// Obter o TOKEN
+		// Get TOKEN
 		$token_request = curl_init(); 
 		curl_setopt($token_request, CURLOPT_URL, 'https://graph.facebook.com/v2.5/oauth/access_token?client_id='.$this->client_id.'&client_secret='.$this->app_secret.'&grant_type=client_credentials');
 		curl_setopt($token_request, CURLOPT_RETURNTRANSFER, true);
@@ -140,7 +157,7 @@ class SocialFeed{
 			exit;
 		}
 
-		// Obter POSTS https://developers.facebook.com/docs/graph-api/reference/v2.5/post
+		// Get POSTS https://developers.facebook.com/docs/graph-api/reference/v2.5/post
 		$posts_request = curl_init(); 
 		curl_setopt($posts_request, CURLOPT_URL, 'https://graph.facebook.com/v2.5/'.$this->facebook_username.'/posts/?fields=id,link,created_time,caption,description,message,full_picture&access_token='.$token );
 		curl_setopt($posts_request, CURLOPT_RETURNTRANSFER, true);
@@ -152,7 +169,7 @@ class SocialFeed{
 
 
 
-	/* ------------------------- INSTAGRAM POSTS --------------------------*/
+		/* ------------------------- INSTAGRAM POSTS --------------------------*/
 
 		$instagram_request = curl_init(); 
 		curl_setopt($instagram_request, CURLOPT_URL, 'https://www.instagram.com/'.$this->instagram_username.'/media/');
@@ -165,14 +182,15 @@ class SocialFeed{
 
 
 
-	/* ------------------------- Mistura os dois feeds em um só array, alternando --------------------------*/
+		/* ------------------------- Merge content from both sources into a single array --------------------------*/
 
-		for( $a=0; $a < max(count($facebook_posts->data),count($instagram_posts->items)); $a++){
+		for( $a=0; $a < 15 && $a < max(count($facebook_posts->data),count($instagram_posts->items)); $a++){
 
 			if($a<count($facebook_posts->data)){
 				$post = $facebook_posts->data[$a];
-					$link = $post->link;
-					$created_time = $post->created_time;
+					$short_id = explode('_',$post->id);
+					$link = 'http://facebook.com/'.$this->facebook_username.'/posts/'.$short_id[1];
+					$created_time = date("d M Y", strtotime($post->created_time));
 					$message = $post->message;
 					$image = $post->full_picture;
 					array_push($combined_posts, array('source'=>'facebook', 'link'=>$link, 'created_time'=>$created_time, 'message'=>$message, 'image'=>$image));
@@ -181,7 +199,7 @@ class SocialFeed{
 			if($a<count($instagram_posts->items)){
 				$post = $instagram_posts->items[$a];
 					$link = $post->link;
-					$created_time = $post->created_time;
+					$created_time = date("d M Y", $post->created_time);
 					$message = $post->caption->text;
 					$image = $post->images->standard_resolution->url;
 					array_push($combined_posts, array('source'=>'instagram', 'link'=>$link, 'created_time'=>$created_time, 'message'=>$message, 'image'=>$image));
@@ -198,26 +216,12 @@ class SocialFeed{
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	/**
-	* Verifica se a última chamada para as APIs foi feita há no mínimo n (checking_throttle) segundos
+	* Checks if already waited n seconds since the last requests
 	*
 	* @return boolean
 	*/
-	private function hasWaited(){
+	private function cacheHasExpired(){
 		if(file_exists($this->log_file)){
 			$logged_time = file_get_contents($this->log_file);
 			//echo time()-$logged_time." seconds";
@@ -233,8 +237,7 @@ class SocialFeed{
 
 
 	/**
-	* Atualiza horário da última requisição das apis e cacheia o conteúdo do feed
-	*
+	* Updates the time of last request and rewrites the feed cache
 	*/
 	private function writeLogAndCache($content){
 		$file = fopen($this->log_file, "w");

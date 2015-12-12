@@ -1,9 +1,9 @@
 # social-feed
-Generates a mixed feed from facebook and instagram for specified profiles.
+Generates a mixed feed from facebook and instagram for the specified profiles.
+The result json is cached locally and updated only after a minimum interval.
 
-# 
 
-Exemplo de uso:
+Usage:
 
 ```
  require 'SocialFeed.php';
@@ -19,27 +19,25 @@ Exemplo de uso:
  ```
 
 
-Retorna um json no formato:
+Returns something like this:
  ```
 {
-
     "status":"success",
     "message":"",
     "data":[
         {
             "source":"facebook",
-            "link":"https:\/\/www.facebook.com\/cafe3coracoes\/photos\/a.113377965404697.17647.106469786095515\/885711318171354\/?type=3",
-            "created_time":"2015-12-11T12:00:01+0000",
-            "message":"Melhor sensação! Primeiro gole do dia é sagrado <3",
-            "image":"https:\/\/fbcdn-photos-h-a.akamaihd.net\/hphotos-ak-xtp1\/v\/t1.0-0\/p180x540\/12294811_885711318171354_3897351323731946768_n.jpg?oh=591de9f86bf766c7c6eb4e36065d8096&oe=56E6516A&__gda__=1461297405_2cb8808c704f8ef45fe9edd1ec7349ff"
+            "link":"http://facebook.com/ubuntulinux/posts/10153694239668592",
+            "created_time":"10 Dec 2015",
+            "message":"GitHub Director of Community (and former Ubuntu Community Manager) Jono Bacon explains why you should go to #UbuCon in January. We can't help but agree.",
+            "image":"https://fbexternal-a.akamaihd.net/safe_image.php?d=AQBonXQFibLBUdJ7&url=http%3A%2F%2Fubucon.org%2Fmedia%2Fcms_page_media%2F1%2Fubucon-community.jpg"
         },
         {
             "source":"instagram",
-            "link":"https:\/\/www.instagram.com\/p\/_JykUcDz9R\/",
-            "created_time":"1449839993",
-            "message":"É quase a mesma coisa que ouvir “eu te amo”! ♥️ #saborqueapaixona #3coracoes #cafeparavoce",
-            "image":"https:\/\/scontent-dfw1-1.cdninstagram.com\/hphotos-xap1\/t51.2885-15\/e35\/12357808_952064864873447_565035088_n.jpg"
+            "link":"https://www.instagram.com/p/_KQgGjPMyV/",
+            "created_time":"11 Dec 2015",
+            "message":"The "bath" process. #arduino #arduinoorg #arduinoteam #onthego #strambino #production #pcb #board #quality #madeinitaly #withlove",
+            "image":"https://scontent-mia1-1.cdninstagram.com/hphotos-xft1/t51.2885-15/s640x640/sh0.08/e35/12356440_765574983571153_147890575_n.jpg"
         },
-        (...)
         
 ```
