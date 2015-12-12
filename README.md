@@ -1,6 +1,5 @@
-# Feed Blender
-This class generates a cached json feed containing data provided from any
-public Facebook account and from any public Instagram account.
+# FeedBlender
+This class generates a cached json feed containing data provided from Facebook and Instagram feeds.
 
 
 ### Usage:
