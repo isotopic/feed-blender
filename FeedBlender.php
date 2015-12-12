@@ -4,6 +4,7 @@
  *
  * @todo exception handling
  * @todo limit itens
+ * @todo interlaced or sort_by_date
  *
  * @version 1.0
  * @author  Guilherme Cruz <guilhermecruz@gmail.com>
@@ -24,19 +25,19 @@ class FeedBlender{
 	// Facebook app_secret - The app secret for the client id above
 	private $app_secret;
 
-	//Facebook Token
+	// Facebook Token
 	private $token;
 
-	// Minimum interval between api requests. I'd say 10 minutes (600 secs) is a pretty good bet.
-	private $checking_throttle = 10;
+	// The minimum interval between api requests, in seconds. 300 = 5 minutes.
+	private $checking_throttle = 3;
 
-	// Used to log the time at the last request.
+	// Used to log the time at the last request
 	private $date = NULL;	
 
-	// A file where to log request timestamps.
+	// The file to log request timestamps
 	private $log_file = "FeedBlender.log";
 
-	// A file where to cache the feed's content.
+	// The file to cache the feed's content
 	private $json_file = "FeedBlender.json";
 
 
@@ -100,7 +101,7 @@ class FeedBlender{
 
 
 	/**
-	* Load and merge content from the apis.
+	* Load and merge content from the apis
 	*/
 	private function loadContentFromAPIs(){
 		$facebook_posts = $this->getFacebookPosts();
@@ -108,29 +109,32 @@ class FeedBlender{
 		$combined_posts = array();
 
 		// Merge content from both sources into a single array
-		for( $a=0; $a < 15 && $a < max(count($facebook_posts->data),count($instagram_posts->items)); $a++){
+		for( $a=0; $a < max(count($facebook_posts->data),count($instagram_posts->items)); $a++){
 			if($a<count($facebook_posts->data)){
 				$post = $facebook_posts->data[$a];
 					$short_id = explode('_',$post->id);
 					$link = 'http://facebook.com/'.$this->facebook_username.'/posts/'.$short_id[1];
+					$timestamp = (int) strtotime( $post->created_time );
 					$created_time = date("d M Y", strtotime($post->created_time));
 					$message = $post->message;
 					$image = $post->full_picture;
-					array_push($combined_posts, array('source'=>'facebook', 'link'=>$link, 'created_time'=>$created_time, 'message'=>$message, 'image'=>$image));
+					array_push($combined_posts, array('source'=>'facebook', 'link'=>$link, 'timestamp'=>$timestamp, 'created_time'=>$created_time, 'message'=>$message, 'image'=>$image));
 			}
 			if($a<count($instagram_posts->items)){
 				$post = $instagram_posts->items[$a];
 					$link = $post->link;
+					$timestamp = (int) $post->created_time;
 					$created_time = date("d M Y", $post->created_time);
 					$message = $post->caption->text;
 					$image = $post->images->standard_resolution->url;
-					array_push($combined_posts, array('source'=>'instagram', 'link'=>$link, 'created_time'=>$created_time, 'message'=>$message, 'image'=>$image));
+					array_push($combined_posts, array('source'=>'instagram', 'link'=>$link, 'timestamp'=>$timestamp, 'created_time'=>$created_time, 'message'=>$message, 'image'=>$image));
 			}
 		}
 
 		$response = array('status'=>'success','message'=>'','data'=>$combined_posts);
 		return json_encode( $response , JSON_UNESCAPED_UNICODE);
 	}
+
 
 
 	private function getFacebookPosts(){
