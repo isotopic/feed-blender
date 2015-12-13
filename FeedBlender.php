@@ -25,7 +25,7 @@ class FeedBlender{
 	private $app_secret;
 
 	// The minimum interval between api requests, in seconds
-	private $checking_throttle = 60;
+	private $checking_throttle = 300;
 
 	// Used to log the time at the last request
 	private $date = NULL;	

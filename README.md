@@ -1,5 +1,5 @@
 # FeedBlender
-This class generates a cached json feed containing data provided from Facebook and Instagram feeds.
+This class generates a cached json feed containing timeline posts from Facebook and Instagram profiles.
 
 
 ### Usage:
@@ -9,10 +9,10 @@ This class generates a cached json feed containing data provided from Facebook a
  require 'FeedBlender.php';
  $feed_blender = new FeedBlender(
     array(
-        'client_id'=>'152123453345544',
-        'app_secret'=>'60asdgfac110d7b1234234241234a0d12e1a0a3420',
-        'facebook_username'=>'johndoe',
-        'instagram_username'=>'johnnydoe'
+        'client_id'=>'646582008814751',
+        'app_secret'=>'f41d88311674dff75df1b5113d587b0a',
+        'facebook_username'=>'cafe3coracoes',
+        'instagram_username'=>'3coracoes'
     )
  );
  echo $feed_blender->getFeed();
