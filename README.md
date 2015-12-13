@@ -11,7 +11,7 @@ This class generates a cached json feed containing timeline posts from Facebook 
     array(
         'client_id'=>'546582008814751',
         'app_secret'=>'e41d88311674dff75df1b5113d587b0a',
-        'facebook_username'=>'wired',
+        'facebook_username'=>'ubuntulinux',
         'instagram_username'=>'arduinoorg'
     )
  );
