@@ -81,10 +81,6 @@ class FeedBlender{
 	* Pre check all what is needed
 	*/
 	private function checkRequirements(){
-		if (!is_writable('/')){
-			throw new Exception("Log file must have write permissions.");
-			exit;
-		}
 		if(!function_exists('curl_version')){
 			throw new Exception("This program requires curl enabled.");
 			exit;
