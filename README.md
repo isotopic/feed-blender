@@ -9,10 +9,10 @@ This class generates a cached json feed containing timeline posts from Facebook 
  require 'FeedBlender.php';
  $feed_blender = new FeedBlender(
     array(
-        'client_id'=>'646582008814751',
-        'app_secret'=>'f41d88311674dff75df1b5113d587b0a',
-        'facebook_username'=>'cafe3coracoes',
-        'instagram_username'=>'3coracoes'
+        'client_id'=>'546582008814751',
+        'app_secret'=>'e41d88311674dff75df1b5113d587b0a',
+        'facebook_username'=>'wired',
+        'instagram_username'=>'arduinoorg'
     )
  );
  echo $feed_blender->getFeed();
