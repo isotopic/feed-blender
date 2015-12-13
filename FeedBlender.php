@@ -25,7 +25,7 @@ class FeedBlender{
 	private $app_secret;
 
 	// The minimum interval between api requests, in seconds
-	private $checking_throttle = 300;
+	private $checking_throttle = 3;
 
 	// Used to log the time at the last request
 	private $date = NULL;	
@@ -35,6 +35,9 @@ class FeedBlender{
 
 	// The file to cache the feed's content
 	private $json_file = "FeedBlender.json";
+
+	// Adicional output info
+	private $message = '';
 
 
 	/** 
@@ -112,21 +115,21 @@ class FeedBlender{
 					$link = 'http://facebook.com/'.$this->facebook_username.'/posts/'.$short_id[1];
 					$timestamp = (int) strtotime( $post->created_time );
 					$created_time = date("d M Y", strtotime($post->created_time));
-					$message = $post->message;
+					$text = $post->message;
 					$image = $post->full_picture;
-					array_push($combined_posts, array('source'=>'facebook', 'username'=>$this->facebook_username, 'link'=>$link, 'timestamp'=>$timestamp, 'created_time'=>$created_time, 'message'=>$message, 'image'=>$image));
+					array_push($combined_posts, array('source'=>'facebook', 'username'=>$this->facebook_username, 'link'=>$link, 'timestamp'=>$timestamp, 'created_time'=>$created_time, 'text'=>$text, 'image'=>$image));
 			}
 			if($a<count($instagram_posts->items)){
 				$post = $instagram_posts->items[$a];
 					$link = $post->link;
 					$timestamp = (int) $post->created_time;
 					$created_time = date("d M Y", $post->created_time);
-					$message = $post->caption->text;
+					$text = $post->caption->text;
 					$image = $post->images->standard_resolution->url;
-					array_push($combined_posts, array('source'=>'instagram', 'username'=>$this->instagram_username, 'link'=>$link, 'timestamp'=>$timestamp, 'created_time'=>$created_time, 'message'=>$message, 'image'=>$image));
+					array_push($combined_posts, array('source'=>'instagram', 'username'=>$this->instagram_username, 'link'=>$link, 'timestamp'=>$timestamp, 'created_time'=>$created_time, 'text'=>$text, 'image'=>$image));
 			}
 		}
-		$response = array('status'=>'success','message'=>'','data'=>$combined_posts);
+		$response = array('status'=>'success','message'=>$this->message,'data'=>$combined_posts);
 		return json_encode( $response , JSON_UNESCAPED_UNICODE);
 		exit;
 	}
@@ -136,9 +139,9 @@ class FeedBlender{
 		// Get a valid token
 		$token_payload = $this->curlGet('https://graph.facebook.com/v2.5/oauth/access_token?client_id='.$this->client_id.'&client_secret='.$this->app_secret.'&grant_type=client_credentials');
 		$token = $token_payload->access_token;
+
 		if($token == NULL){
-			return json_encode(array( 'status'=>'error','message'=>'Token inválido','data'=>'' ), JSON_UNESCAPED_UNICODE);
-			exit;
+			$this->message = "Invalid facebook token. ";
 		}
 		// Get posts https://developers.facebook.com/docs/graph-api/reference/v2.5/post
 		$facebook_posts = $this->curlGet('https://graph.facebook.com/v2.5/'.$this->facebook_username.'/posts/?fields=id,link,created_time,caption,description,message,full_picture&access_token='.$token );

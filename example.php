@@ -70,8 +70,8 @@ $response_json = $feed_blender->getFeed();
                 <p>If you need a php object, just decode it:</p>
 
                 <pre><code class="language-php">$response = json_decode( $response_json );
-//Prints the first item's message:
-echo $response->data[0]->message;</code></pre>
+//Prints the first item's text:
+echo $response->data[0]->text;</code></pre>
 
 
 
@@ -98,7 +98,7 @@ echo $response->data[0]->message;</code></pre>
     		    	</a>
     		    	<div class="caption">
                         <h4><span class="socicon-<?php echo $item->source; ?>"></span> /<?php echo $item->username; ?></h4>
-    		    		<p class="lead"><?php echo $item->message; ?></p>
+    		    		<p class="lead"><?php echo $item->text; ?></p>
     		    	</div>
     		    </div>
 
