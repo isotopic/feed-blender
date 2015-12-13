@@ -12,20 +12,14 @@
 
 class FeedBlender{
 
-	// Facebook content provider
-	private $facebook_username;
+	// Facebook accounts + app/secret credentials
+	private $facebook_sources = NULL;
 
-	// Instagram content provider
-	private $instagram_username;
-
-	// Facebook client_id - From any app registered on Facebook Developers
-	private $client_id;
-
-	// Facebook app_secret - The app secret for the client id above
-	private $app_secret;
+	// Instagram accounts - it's timeline api ("/media") does not require credentials
+	private $instagram_sources = NULL;
 
 	// The minimum interval between api requests, in seconds
-	private $checking_throttle = 3;
+	private $checking_throttle = 300;
 
 	// Used to log the time at the last request
 	private $date = NULL;	
@@ -40,6 +34,9 @@ class FeedBlender{
 	private $message = '';
 
 
+
+
+
 	/** 
 	* Let's construct something
 	*/
@@ -47,11 +44,20 @@ class FeedBlender{
 		date_default_timezone_set('America/Sao_Paulo');
 		setlocale(LC_ALL, 'pt_BR');
 		$this->date = getdate();
-		$this->client_id = $args['client_id'];
-		$this->app_secret = $args['app_secret'];
-		$this->facebook_username = $args['facebook_username'];
-		$this->instagram_username = $args['instagram_username'];
+		if(isset($args['facebook'])  
+		&& isset($args['facebook']['client_id']) 
+		&& isset($args['facebook']['app_secret'])
+		&& isset($args['facebook']['users'])){
+			$this->facebook_sources = $args['facebook'];
+		}
+		if(isset($args['instagram'])  
+		&& isset($args['instagram']['users'])){
+			$this->instagram_sources = $args['instagram'];
+		}
 	}
+
+
+
 
 	/**
 	* Main gateway to the content.
@@ -59,7 +65,7 @@ class FeedBlender{
 	*/
 	public function getFeed(){
 		if( $this->cacheHasExpired() ){
-			// Reloads the content from the APIs
+			// Reloads content from the APIs
 			$feed = $this->loadContentFromAPIs();
 			$this->writeLogAndCache($feed);
 			return $feed;
@@ -68,6 +74,8 @@ class FeedBlender{
 			return file_get_contents($this->json_file);
 		}
 	}
+
+
 
 
 	/**
@@ -86,6 +94,8 @@ class FeedBlender{
 	}
 
 
+
+
 	/**
 	* Updates the time of last request and rewrites the feed cache
 	*/
@@ -99,35 +109,69 @@ class FeedBlender{
 	}
 
 
+ 
+
 	/**
 	* Load and merge content from the apis
 	*/
 	private function loadContentFromAPIs(){
-		$facebook_posts = $this->getFacebookPosts();
-		$instagram_posts = $this->getInstagramPosts();
+
+		$facebook_timelines = $this->getFacebookPosts();
+		$instagram_timelines = $this->getInstagramPosts();
 		$combined_posts = array();
 
-		// Merge content from both sources into a single array
-		for( $a=0; $a < max(count($facebook_posts->data),count($instagram_posts->items)); $a++){
-			if($a<count($facebook_posts->data)){
-				$post = $facebook_posts->data[$a];
-					$short_id = explode('_',$post->id);
-					$link = 'http://facebook.com/'.$this->facebook_username.'/posts/'.$short_id[1];
-					$timestamp = (int) strtotime( $post->created_time );
-					$created_time = date("d M Y", strtotime($post->created_time));
-					$text = $post->message;
-					$image = $post->full_picture;
-					array_push($combined_posts, array('source'=>'facebook', 'username'=>$this->facebook_username, 'link'=>$link, 'timestamp'=>$timestamp, 'created_time'=>$created_time, 'text'=>$text, 'image'=>$image));
+		//Find the size of the biggest timeline
+		$biggest = 0;
+		for( $a=0; $a < count($facebook_timelines); $a++){
+			if( count($facebook_timelines[$a]) > $biggest){
+				$biggest = count($facebook_timelines[$a]);
 			}
-			if($a<count($instagram_posts->items)){
-				$post = $instagram_posts->items[$a];
-					$link = $post->link;
-					$timestamp = (int) $post->created_time;
-					$created_time = date("d M Y", $post->created_time);
-					$text = $post->caption->text;
-					$image = $post->images->standard_resolution->url;
-					array_push($combined_posts, array('source'=>'instagram', 'username'=>$this->instagram_username, 'link'=>$link, 'timestamp'=>$timestamp, 'created_time'=>$created_time, 'text'=>$text, 'image'=>$image));
+		}
+		for( $a=0; $a < count($instagram_timelines); $a++){
+			if( count($instagram_timelines[$a]) > $biggest){
+				$biggest = count($instagram_timelines[$a]);
 			}
+		}
+
+		// Merge content from all sources into a single array
+		for( $a=0; $a < $biggest; $a++){
+
+			//All facebook timelines
+			for( $i=0; $i<count($facebook_timelines); $i++){
+				$timeline = $facebook_timelines[$i];
+				if($a<count($timeline)){
+					$post = $timeline[$a];
+						$id = explode('_',$post->id);
+						array_push($combined_posts, array(
+							'source'=>'facebook', 
+							'username'=>$post->from->name, 
+							'link'=>'http://facebook.com/'.$post->from->id.'/posts/'.$id[1],
+							'timestamp'=>(int) strtotime( $post->created_time ), 
+							'created_time'=>date("d M Y", strtotime($post->created_time)), 
+							'text'=>$post->message, 
+							'image'=>$post->full_picture
+							)
+						);
+				}
+			}
+			//All instagram timelines
+			for( $i=0; $i<count($instagram_timelines); $i++){
+				$timeline = $instagram_timelines[$i];
+				if($a<count($timeline)){
+					$post = $timeline[$a];
+						array_push($combined_posts, array(
+							'source'=>'instagram', 
+							'username'=>$post->caption->from->username, 
+							'link'=>$post->link, 
+							'timestamp'=>(int) $post->created_time, 
+							'created_time'=>date("d M Y", $post->created_time), 
+							'text'=>$post->caption->text, 
+							'image'=>$post->images->standard_resolution->url
+							)
+						);
+				}
+			}	
+
 		}
 		$response = array('status'=>'success','message'=>$this->message,'data'=>$combined_posts);
 		return json_encode( $response , JSON_UNESCAPED_UNICODE);
@@ -135,26 +179,52 @@ class FeedBlender{
 	}
 
 
+
+
+
+	// Returns an 2d array of facebook timelines for each user specified
 	private function getFacebookPosts(){
+		$timelines = array();
 		// Get a valid token
-		$token_payload = $this->curlGet('https://graph.facebook.com/v2.5/oauth/access_token?client_id='.$this->client_id.'&client_secret='.$this->app_secret.'&grant_type=client_credentials');
+		$token_payload = $this->curlGet('https://graph.facebook.com/v2.5/oauth/access_token?client_id='.$this->facebook_sources['client_id'].'&client_secret='.$this->facebook_sources['app_secret'].'&grant_type=client_credentials');
 		$token = $token_payload->access_token;
-
 		if($token == NULL){
-			$this->message = "Invalid facebook token. ";
+			$this->message = "Invalid facebook token.";
+			return array();
 		}
-		// Get posts https://developers.facebook.com/docs/graph-api/reference/v2.5/post
-		$facebook_posts = $this->curlGet('https://graph.facebook.com/v2.5/'.$this->facebook_username.'/posts/?fields=id,link,created_time,caption,description,message,full_picture&access_token='.$token );
-		return $facebook_posts;
+		// Load all timelines
+		for($a=0; $a<count($this->facebook_sources['users']); $a++){
+			$user_posts = $this->curlGet('https://graph.facebook.com/v2.5/'.$this->facebook_sources['users'][$a].'/posts/?fields=id,from,link,created_time,caption,description,message,full_picture&access_token='.$token );
+			if(isset($user_posts->data)){
+				array_push($timelines, $user_posts->data);
+			}
+		}
+		return $timelines;
 	}
 
 
+
+
+
+	// Returns an 2d array of instagram timelines for each user specified
 	private function getInstagramPosts(){
-		$instagram_posts = $this->curlGet('https://www.instagram.com/'.$this->instagram_username.'/media/');
-		return $instagram_posts;
+		$timelines = array();
+		// Load all timelines
+		for($a=0; $a<count($this->instagram_sources['users']); $a++){
+			$user_posts = $this->curlGet('https://www.instagram.com/'.$this->instagram_sources['users'][$a].'/media/');
+			if(isset($user_posts->items)){
+				array_push($timelines, $user_posts->items);
+			}
+		}
+		return $timelines;
 	}
 
 
+
+
+
+
+	// As simple as it GETs!
 	private function curlGet($url){
 		$curl = curl_init(); 
 		curl_setopt($curl, CURLOPT_URL, $url);

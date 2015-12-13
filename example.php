@@ -1,12 +1,15 @@
 <?php
 require 'FeedBlender.php';
-$feed_blender = new FeedBlender(
-	array(
-		'client_id'=>'646582008814751',
-		'app_secret'=>'f41d88311674dff75df1b5113d587b0a',
-		'facebook_username'=>'wired',
-		'instagram_username'=>'arduinoorg'
-	)
+$feed_blender = new FeedBlender( array(
+  'facebook'=>array(
+    'client_id'=>'646582008814751',
+    'app_secret'=>'f41d88311674dff75df1b5113d587b0a',
+    'users'=>array('wired', 'ubuntulinux', 'instructables')
+  ),
+  'instagram'=>array(
+    'users'=>array('arduinoorg', 'unsplash')
+    )
+  )
 );
 $response_json = $feed_blender->getFeed();
 ?>
@@ -20,19 +23,32 @@ $response_json = $feed_blender->getFeed();
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
         <link href="https://file.myfontastic.com/n6vo44Re5QaWo8oCKShBs7/icons.css" rel="stylesheet">
+        <link href="http://fonts.googleapis.com/css?family=Dosis:300,400,500,700,600,800" rel="stylesheet" type="text/css">
         <link rel='stylesheet' id='prism-css'  href='https://cdnjs.cloudflare.com/ajax/libs/prism/0.0.1/prism.min.css' type='text/css' media='all' />
         <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/0.0.1/prism.min.js"></script>
+        <style>
+        body{
+          font-family: "Dosis";
+          color:#333;
+          background-color: #fff;
+        }
+        .dark{
+          border-right:1px dashed #ddd;
+        }
+        </style>
     </head>
 
     <body>
 
 
     <div class="container">
+
         <div class="row">
 
+            <div class="col-sm-6 dark"> 
 
-            <div class="col-sm-6 col-sm-offset-3 text-center"> 
-                <h2>FeedBlender</h2>
+                <h1>FeedBlender</h1>
+
                 <p class="lead">Generates a cached json feed containing posts from choosen Facebook and Instagram accounts.</p>
                 <p class="lead">
                   <a href="https://github.com/isotopic/feed-blender" style="color:#333;text-decoration:none"> <span class="socicon-github"></a> 
@@ -42,67 +58,82 @@ $response_json = $feed_blender->getFeed();
                     </svg>
                   </a>
                 </p>
+
             </div>
 
-
-
             <div class="col-sm-6"> 
-                <h3>Usage</h3>
+            </div>
 
-                <pre><code class="language-php"><?php
-                $file = fopen("example.php","r");
-                $a = 0;
-                while($a<11){echo fgets($file)."<br>"; $a++; }
-                fclose($file);
-                ?></code></pre>
+        </div>
 
-                <p>Results the following json format:</p>
 
-                <pre><code class="language-json"><?php
-                $sample = explode(",", $response_json);
-                $sample = array_slice($sample, 0, 16);
-                $sample = implode(",", $sample);
-                $sample = str_replace("\\", "", $sample);
-                echo prettyPrint($sample);
-                ?>
-                ...</code></pre>
 
-                <p>If you need a php object, just decode it:</p>
+        <div class="row">
 
-                <pre><code class="language-php">$response = json_decode( $response_json );
+            <div class="col-sm-6 dark"> 
+
+              <h2>Usage</h2>
+
+              <pre><code class="language-php"><?php
+              $file = fopen("example.php","r");
+              $a = 0;
+              while($a<14){echo fgets($file)."<br>"; $a++; }
+              fclose($file);
+              ?></code></pre>
+
+              <p>Results the following json format:</p>
+
+              <pre><code class="language-json"><?php
+              $sample = explode(",", $response_json);
+              $sample = array_slice($sample, 0, 16);
+              $sample = implode(",", $sample);
+              $sample = str_replace("\\", "", $sample);
+              echo prettyPrint($sample);
+              ?>
+
+      ...     </code></pre>
+
+              <p>If you want the result in standard php object, just decode it:</p>
+
+              <pre><code class="language-php">$response = json_decode( $response_json );
 //Prints the first item's text:
 echo $response->data[0]->text;</code></pre>
 
 
+              <h2>Notes</h2>
 
-            <h3 class="">Note</h3>
-            <p class="">The <code>client_id</code> and <code>app_secret</code> used in this example were created for testing purposes and are subject to invalidation at any moment. 
-            Your own credentials can be acquired upon registration of any app on Facebook Developers:
-            <a href="https://developers.facebook.com/quickstarts/?platform=web">https://developers.facebook.com/quickstarts/?platform=web</a></p>
+              <h3>Authentication</h3>
 
-            <hr><a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a><br /><span xmlns:dct="http://purl.org/dc/terms/" property="dct:title">FeedBlender</span> by <a xmlns:cc="http://creativecommons.org/ns#" href="http://www.isotopic.com.br" property="cc:attributionName" rel="cc:attributionURL">Guilherme Cruz</a> is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
+              <p class="">The facebook Graph API requires a <code>client_id</code> and <code>app_secret</code>. The ones used in this example were created for testing purposes and are subject to invalidation at any moment. 
+              Your own credentials can be acquired upon registration on Facebook Developers:
+              <a href="https://developers.facebook.com/quickstarts/?platform=web">https://developers.facebook.com/quickstarts/?platform=web</a></p>
 
-            
+              <h3>Sorting</h3>
+
+              <p>The elements are interlaced, independently of the creation dates. This way the content is homogeneously mixed.</p>
+              <hr><a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a><br /><span xmlns:dct="http://purl.org/dc/terms/" property="dct:title">FeedBlender</span> by <a xmlns:cc="http://creativecommons.org/ns#" href="http://www.isotopic.com.br" property="cc:attributionName" rel="cc:attributionURL">Guilherme Cruz</a> is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
 
             </div>
 
 
 
             <div class="col-sm-6"> 
-                <h3>Content</h3>
+              <h2>Content</h2>
+
                 <?php $response = json_decode( $response_json ); foreach($response->data as $item){ ?>
 
-    		    <div class="thumbnail">
-    		   		<a target="_blank" href="<?php echo $item->link; ?>">
-    		    		<img src="<?php echo $item->image; ?>" class="img-responsive">
-    		    	</a>
-    		    	<div class="caption">
-                        <h4><span class="socicon-<?php echo $item->source; ?>"></span> /<?php echo $item->username; ?></h4>
-    		    		<p class="lead"><?php echo $item->text; ?></p>
-    		    	</div>
-    		    </div>
+        		    <div class="thumbnail">
+        		   		<a target="_blank" href="<?php echo $item->link; ?>">
+        		    		<img src="<?php echo $item->image; ?>" class="img-responsive <?php echo !$item->image?'hidden':''; ?>">
+        		    	</a>
+        		    	<div class="caption">
+                            <h4><span class="socicon-<?php echo $item->source; ?>"></span> /<?php echo $item->username; ?></h4>
+        		    		<p class="lead"><?php echo $item->text; ?></p>
+        		    	</div>
+        		    </div>
 
                 <?php } ?>
+
             </div>
 
 
