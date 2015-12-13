@@ -9,10 +9,10 @@ This class generates a cached json feed containing timeline posts from Facebook 
  require 'FeedBlender.php';
  $feed_blender = new FeedBlender(
     array(
-        'client_id'=>'646582008814751',
-        'app_secret'=>'f41d88311674dff75df1b5113d587b0a',
-        'facebook_username'=>'cafe3coracoes',
-        'instagram_username'=>'3coracoes'
+        'client_id'=>'YOUR_FACEBOOK_APP_ID',
+        'app_secret'=>'YOUR_FACEBOOK_APP_SECRET',
+        'facebook_username'=>'some_public_facebook_username',
+        'instagram_username'=>'some_public_instagram_profile'
     )
  );
  echo $feed_blender->getFeed();
@@ -45,7 +45,7 @@ Should produce something like this:
 ```
 
 
-
+### Note
 In order to access the Facebook Graph API, a valid pair client_id/app_secret must be provided.
 These credentials can be acquired upon registration of any app here:
 https://developers.facebook.com/quickstarts/?platform=web
