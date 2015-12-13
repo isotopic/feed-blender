@@ -54,6 +54,7 @@ class FeedBlender{
 		&& isset($args['instagram']['users'])){
 			$this->instagram_sources = $args['instagram'];
 		}
+		$this->checkRequirements();
 	}
 
 
@@ -76,7 +77,19 @@ class FeedBlender{
 	}
 
 
-
+	/**
+	* Pre check all what is needed
+	*/
+	private function checkRequirements(){
+		if (!is_writable('/')){
+			throw new Exception("Log file must have write permissions.");
+			exit;
+		}
+		if(!function_exists('curl_version')){
+			throw new Exception("This program requires curl enabled.");
+			exit;
+		}
+	}
 
 	/**
 	* Checks if already waited n seconds since the last api requests
@@ -149,7 +162,7 @@ class FeedBlender{
 							'timestamp'=>(int) strtotime( $post->created_time ), 
 							'created_time'=>date("d M Y", strtotime($post->created_time)), 
 							'text'=>$post->message, 
-							'image'=>$post->full_picture
+							'image'=>isset($post->full_picture)?$post->full_picture:''
 							)
 						);
 				}
