@@ -1,5 +1,6 @@
 # FeedBlender
-This class generates a cached json feed containing timeline posts from Facebook and Instagram profiles.
+##### This class generates a cached json containing timeline posts from Facebook, Twitter and Instagram profiles. 
+
 
 
 ### Usage:
@@ -57,8 +58,6 @@ Should produce something like this:
 ```
 
 
-In order to request the Facebook and Twitter apis you must provide the corresponding pair client_id/app_secret. You can get them upon registration of your app:
-https://developers.facebook.com/quickstarts/?platform=web
-https://apps.twitter.com/app/new
+In order to request the Facebook and Twitter apis you must provide the corresponding pair client_id/app_secret. You can get them upon registration of your app: [Facebook developers](https://developers.facebook.com/quickstarts/?platform=web) / [Twitter developers](https://apps.twitter.com/app/new)
 
 Instagram is the Good Guy Greg and doesn't require anything for something so simple as reading public posts.
