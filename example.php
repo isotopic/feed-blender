@@ -1,17 +1,27 @@
 <?php
 require 'FeedBlender.php';
-$feed_blender = new FeedBlender( array(
-  'facebook'=>array(
-    'client_id'=>'646582008814751',
-    'app_secret'=>'f41d88311674dff75df1b5113d587b0a',
-    'users'=>array('wired', 'ubuntulinux', 'instructables')
-  ),
-  'instagram'=>array(
-    'users'=>array('arduinoorg', 'unsplash')
+$feed_blender = new FeedBlender(
+  array(
+    'facebook'=>array(
+      'client_id'=>'646582008814751',
+      'app_secret'=>'f41d88311674dff75df1b5113d587b0a',
+      'users'=>array('wired', 'ubuntulinux')
+    ),
+    'instagram'=>array(
+      'users'=>array('arduinoorg', 'unsplash')
+    ),
+    'twitter'=>array(
+      'client_id'=>'8f4lUdOqrWR1xSiVg5kBmQhd4',
+      'app_secret'=>'ZMWEomNX3G9nfcRYoJi1zUWUvrB8RisT1aeYdctKwbXJfljZYD',
+      'users'=>array('MongoDB', 'npmjs')
     )
   )
 );
 $response_json = $feed_blender->getFeed();
+/**
+* Warning: The credentials used here may stop working at any moment. You should get yours in:
+* https://developers.facebook.com/quickstarts/?platform=web
+**/ 
 ?>
 <!doctype html>
 <html>
@@ -45,7 +55,7 @@ $response_json = $feed_blender->getFeed();
 
         <div class="row">
 
-            <div class="col-sm-6 dark"> 
+            <div class="col-sm-7 dark"> 
 
                 <h1>FeedBlender</h1>
 
@@ -61,7 +71,7 @@ $response_json = $feed_blender->getFeed();
 
             </div>
 
-            <div class="col-sm-6"> 
+            <div class="col-sm-5"> 
             </div>
 
         </div>
@@ -70,14 +80,15 @@ $response_json = $feed_blender->getFeed();
 
         <div class="row">
 
-            <div class="col-sm-6 dark"> 
+            <div class="col-sm-7 dark"> 
 
               <h2>Usage</h2>
 
               <pre><code class="language-php"><?php
+              //This prints the first 20 lines of this page
               $file = fopen("example.php","r");
               $a = 0;
-              while($a<14){echo fgets($file)."<br>"; $a++; }
+              while($a<20){echo fgets($file)."<br>"; $a++; }
               fclose($file);
               ?></code></pre>
 
@@ -85,7 +96,7 @@ $response_json = $feed_blender->getFeed();
 
               <pre><code class="language-json"><?php
               $sample = explode(",", $response_json);
-              $sample = array_slice($sample, 0, 16);
+              $sample = array_slice($sample, 0, 17);
               $sample = implode(",", $sample);
               $sample = str_replace("\\", "", $sample);
               echo prettyPrint($sample);
@@ -117,8 +128,8 @@ echo $response->data[0]->text;</code></pre>
 
 
 
-            <div class="col-sm-6"> 
-              <h2>Content</h2>
+            <div class="col-sm-5"> 
+              <h2>Blended</h2>
 
                 <?php $response = json_decode( $response_json ); foreach($response->data as $item){ ?>
 
