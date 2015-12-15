@@ -13,7 +13,7 @@ $feed_blender = new FeedBlender(
     'facebook'=>array(
       'client_id'=>'FACEBOOK_CLIENT_ID',
       'app_secret'=>'FACEBOOK_APP_SECRET',
-      'users'=>array('wired', 'ubuntulinux', 'instructables')
+      'users'=>array('wired', 'instructables')
     ),
     'instagram'=>array(
       'users'=>array('arduinoorg', 'unsplash')

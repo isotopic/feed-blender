@@ -5,7 +5,7 @@ $feed_blender = new FeedBlender(
     'facebook'=>array(
       'client_id'=>'646582008814751',
       'app_secret'=>'f41d88311674dff75df1b5113d587b0a',
-      'users'=>array('wired','ubuntulinux')
+      'users'=>array('wired','verge')
     ),
     'instagram'=>array(
       'users'=>array('unsplash', 'iss')
@@ -17,7 +17,7 @@ $feed_blender = new FeedBlender(
     )
   )
 );
-$response_json = $feed_blender->getFeed(20);
+$response_json = $feed_blender->getFeed(50);
 /**
 * Warning: The credentials used here may stop working at any moment. You should get yours in:
 * https://developers.facebook.com/quickstarts/?platform=web
@@ -42,8 +42,12 @@ $response_json = $feed_blender->getFeed(20);
           color:#333;
           background-color: #fff;
         }
-        .dark{
-          border-right:1px dashed #ddd;
+        .left{
+          padding:20px 40px;
+        }
+        .right{
+          background-color: #222;
+          padding:40px;
         }
         </style>
     </head>
@@ -51,15 +55,15 @@ $response_json = $feed_blender->getFeed(20);
     <body>
 
 
-    <div class="container">
+    <div class="container-fluid">
 
         <div class="row">
 
-            <div class="col-sm-7 dark"> 
+            <div class="col-sm-7 left"> 
 
                 <h1>FeedBlender</h1>
 
-                <p class="lead">Generates a cached json feed containing posts from choosen Facebook and Instagram accounts.</p>
+                <p class="lead">Generates a cached json feed containing posts from choosen Facebook, Twitter and Instagram accounts.</p>
                 <p class="lead">
                   <a href="https://github.com/isotopic/feed-blender" style="color:#333;text-decoration:none"> <span class="socicon-github"></a> 
                   <a href="http://www.isotopic.com.br" target="_blank">
@@ -69,18 +73,6 @@ $response_json = $feed_blender->getFeed(20);
                   </a>
                 </p>
 
-            </div>
-
-            <div class="col-sm-5"> 
-            </div>
-
-        </div>
-
-
-
-        <div class="row">
-
-            <div class="col-sm-7 dark"> 
 
               <h2>Usage</h2>
 
@@ -132,8 +124,8 @@ echo $response->data[0]->text;</code></pre>
 
 
 
-            <div class="col-sm-5"> 
-              <h2>Blended</h2>
+            <div class="col-sm-5 right"> 
+
 
                 <?php $response = json_decode( $response_json ); foreach($response->data as $item){ ?>
 
