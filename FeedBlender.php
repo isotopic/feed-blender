@@ -18,11 +18,11 @@ class FeedBlender{
 	// Instagram accounts - credentials are NOT required
 	private $instagram_sources = NULL;
 
-	// The minimum interval between api requests, in seconds.
-	private $checking_throttle = 600;
+	// The minimum interval between api requests, in seconds. 600 = 10 minutes.
+	private $cache_minimum_time = 600;
 
 	// Used to log the time at the last request
-	private $date = NULL;	
+	private $date = NULL;
 
 	// The file to log request timestamps
 	private $log_file = "FeedBlender.log";
@@ -32,6 +32,12 @@ class FeedBlender{
 
 	// Adicional output info
 	private $message = '';
+
+	// Limit for the resulting feed. Defaults to 100.
+	private $global_limit = 100;
+
+	// Type of sorting. Defaults to 'date'. Other option is 'interlaced'.
+	private $sorting = 'date';
 
 
 	/** 
@@ -66,8 +72,12 @@ class FeedBlender{
 	/**
 	* Main gateway to the content.
 	* The source used depends on cache expiration.
+	* @param limit Number of itens to be fetched
+	* @param sorting Type of sorting to be used. Can be 'date' or 'interlaced'.
 	*/
-	public function getFeed(){
+	public function getFeed($limit=100, $sorting='date'){
+		$this->global_limit = $limit;
+		$this->sorting = $sorting;
 		if( $this->cacheHasExpired() ){
 			// Reloads content from the APIs
 			$feed = $this->loadContentFromAPIs();
@@ -90,15 +100,15 @@ class FeedBlender{
 		}
 	}
 
+
+
 	/**
-	* Checks if already waited n seconds since the last api requests
+	* Checks for cache validity
 	*/
 	private function cacheHasExpired(){
-		if(file_exists($this->log_file)){
-			$logged_time = file_get_contents($this->log_file);
-			if(time()-$logged_time > $this->checking_throttle){
-				return true;
-			}else{
+		if(file_exists($this->log_file) && file_exists($this->json_file)){
+			$log_content = json_decode( file_get_contents($this->log_file) );
+			if( (time()-$log_content->time < $this->cache_minimum_time) && ($log_content->users == $this->hashUsers()) ){
 				return false;
 			}
 		}
@@ -106,22 +116,32 @@ class FeedBlender{
 	}
 
 
-
-
 	/**
-	* Updates the time of last request and rewrites the feed cache
+	* .log file contains the time of last api requests, and feeds used at the time.
+	* .json file contains the cached content.
 	*/
 	private function writeLogAndCache($content){
-		$file = fopen($this->log_file, "w");
-		fwrite($file, time());
-		fclose($file);
-		$file = fopen($this->json_file, "w");
-		fwrite($file, $content);
-		fclose($file);
+		//Log file
+		$log_file = fopen($this->log_file, "w");
+		$log_content = array('time'=>time(),'users'=>$this->hashUsers() );
+		fwrite($log_file, json_encode($log_content ,JSON_UNESCAPED_UNICODE) );
+		fclose($log_file);
+		//Feed file
+		$json_file = fopen($this->json_file, "w");
+		fwrite($json_file, $content);
+		fclose($json_file);
 	}
 
 
- 
+	/**
+	* Generates a hashed tag from used accounts. If any of it changes, the cache must be invalidated.
+	*/
+	private function hashUsers(){
+		$facebook_users = implode(",", isset($this->facebook_sources['users']) ? $this->facebook_sources['users'] : array());
+		$instagram_users = implode(",", isset($this->instagram_sources['users']) ? $this->instagram_sources['users'] : array());
+		$twitter_users = implode(",", isset($this->twitter_sources['users']) ? $this->twitter_sources['users'] : array());
+		return $facebook_users.','.$instagram_users.','.$twitter_users;
+	}
 
 	/**
 	* Load and merge content from the apis
@@ -209,12 +229,32 @@ class FeedBlender{
 			}	
 
 		}
+
+		// Content already comes interlaced. If date is defined, sort all by date.
+		if($this->sorting=="date"){
+			usort($blended_timelines, function($a, $b) {
+			    return  $b['timestamp'] - $a['timestamp'];
+			});
+		} 
+
+		// Slice to limit
+		$blended_timelines = array_slice( $blended_timelines, 0, $this->global_limit );
+
 		$response = array('status'=>'success','message'=>$this->message,'data'=>$blended_timelines);
 		return json_encode( $response , JSON_UNESCAPED_UNICODE);
 		exit;
 	}
 
 
+
+	//Sorting functions
+	private function dateSort($array){
+		return usort($array, array($this, "sort_fn"));
+	}
+	private function sort_fn($a, $b){
+		if ($a->timestamp == $b->timestamp) return 0;
+		return ($a->timestamp<$b->timestamp)?-1:1;
+	}
 
 
 
@@ -237,7 +277,6 @@ class FeedBlender{
 		}
 		return $timelines;
 	}
-
 
 
 
@@ -307,12 +346,6 @@ class FeedBlender{
 
 
 }
-
-
-
-
-
-
 
 
 

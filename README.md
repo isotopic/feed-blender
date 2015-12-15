@@ -25,7 +25,9 @@ $feed_blender = new FeedBlender(
     )
   )
 );
-$response_json = $feed_blender->getFeed();
+$response_json = $feed_blender->getFeed(10);
+//Optional sorting parameter:
+//$response_json = $feed_blender->getFeed(10, 'interlaced');
 ?>
 ```
 

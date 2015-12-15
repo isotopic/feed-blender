@@ -5,19 +5,19 @@ $feed_blender = new FeedBlender(
     'facebook'=>array(
       'client_id'=>'646582008814751',
       'app_secret'=>'f41d88311674dff75df1b5113d587b0a',
-      'users'=>array('wired', 'ubuntulinux')
+      'users'=>array('wired','ubuntulinux')
     ),
     'instagram'=>array(
-      'users'=>array('arduinoorg', 'unsplash')
+      'users'=>array('unsplash', 'iss')
     ),
     'twitter'=>array(
       'client_id'=>'8f4lUdOqrWR1xSiVg5kBmQhd4',
       'app_secret'=>'ZMWEomNX3G9nfcRYoJi1zUWUvrB8RisT1aeYdctKwbXJfljZYD',
-      'users'=>array('MongoDB', 'npmjs')
+      'users'=>array('npmjs')
     )
   )
 );
-$response_json = $feed_blender->getFeed();
+$response_json = $feed_blender->getFeed(20);
 /**
 * Warning: The credentials used here may stop working at any moment. You should get yours in:
 * https://developers.facebook.com/quickstarts/?platform=web
@@ -121,7 +121,11 @@ echo $response->data[0]->text;</code></pre>
 
               <h3>Sorting</h3>
 
-              <p>The elements are interlaced, independently of the creation dates. This way the content is homogeneously mixed.</p>
+              <p>The content is sorted by date but this can result in prolific users shadowing other content sources.<br>
+              If you want a more homogeneous mix, you can use the optional sorting parameter: </p>
+
+              <pre><code class="language-php">$response_json = $feed_blender->getFeed(20, 'interlaced');</code></pre>
+
               <hr><a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a><br /><span xmlns:dct="http://purl.org/dc/terms/" property="dct:title">FeedBlender</span> by <a xmlns:cc="http://creativecommons.org/ns#" href="http://www.isotopic.com.br" property="cc:attributionName" rel="cc:attributionURL">Guilherme Cruz</a> is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
 
             </div>
@@ -138,7 +142,11 @@ echo $response->data[0]->text;</code></pre>
         		    		<img src="<?php echo $item->image; ?>" class="img-responsive <?php echo !$item->image?'hidden':''; ?>">
         		    	</a>
         		    	<div class="caption">
-                            <h4><span class="socicon-<?php echo $item->source; ?>"></span> /<?php echo $item->username; ?></h4>
+                    <h4>
+                      <span class="socicon-<?php echo $item->source; ?>"></span> /<?php echo $item->username; ?>
+                      <span class="pull-right"><?php echo $item->created_time; ?></span>
+                    </h4>
+
         		    		<p class="lead"><?php echo $item->text; ?></p>
         		    	</div>
         		    </div>
