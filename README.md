@@ -62,4 +62,4 @@ Should produce something like this:
 
 In order to request the Facebook and Twitter apis you must provide the corresponding pair client_id/app_secret. You can get them upon registration of your app: [Facebook developers](https://developers.facebook.com/quickstarts/?platform=web) / [Twitter developers](https://apps.twitter.com/app/new)
 
-Instagram does not require authentication for reading public timelines, although it will require user permissions (oauth2 aka. redirected user login shit) for any other things like filtering by hashtags, etc.
+Instagram does not require authentication for reading public timelines, although it will require user permissions (oauth2 aka. redirected user login shit) for any other simple things like filtering by hashtags, etc.
