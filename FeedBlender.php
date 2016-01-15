@@ -1,10 +1,10 @@
 <?php
 /**
- * The amazing Feed Blender mix up and serve your favorite facebook, instagram and twitter feeds.
- *
+ * Social media feed aggregator.
  *
  * @version 1.5
  * @author  Guilherme Cruz <guilhermecruz@gmail.com>
+ * @url https://github.com/isotopic/feed-blender
 */
 
 class FeedBlender{
