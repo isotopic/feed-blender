@@ -4,7 +4,7 @@
  *
  * @version 1.5
  * @author  Guilherme Cruz <guilhermecruz@gmail.com>
- * @source https://github.com/isotopic/feed-blender
+ * @website https://github.com/isotopic/feed-blender
 */
 
 class FeedBlender{
