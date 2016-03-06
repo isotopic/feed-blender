@@ -114,7 +114,7 @@ $response_json = $feed_blender->getFeed(30);
 
               <pre><code class="language-json"><?php
               $sample = explode(",", $response_json);
-              $sample = array_slice($sample, 0, 18);
+              $sample = array_slice($sample, 0, 19);
               $sample = implode(",", $sample);
               $sample = str_replace("\\", "", $sample);
               echo prettyPrint($sample);

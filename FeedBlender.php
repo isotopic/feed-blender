@@ -1,9 +1,9 @@
 <?php
 /**
- * Social media feed aggregator.
+ * Social media aggregator.
  *
  *
- * @version 1.5
+ * @version 1.6
  * @author  Guilherme Cruz <guilhermecruz@gmail.com>
  * @link https://github.com/isotopic/feed-blender
 */
@@ -23,7 +23,7 @@ class FeedBlender{
 	private $youtube_sources = NULL;
 
 	// The minimum interval between api requests, in seconds. 600 = 10 minutes.
-	private $cache_minimum_time = 1800;
+	private $cache_minimum_time = 600;
 
 	// Used to log the time at the last request
 	private $date = NULL;
