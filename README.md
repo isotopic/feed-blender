@@ -73,5 +73,7 @@ In order to consume the Facebook, Twitter and Youtube apis, you **must get your 
 The ones used in this example are for testing purposes only and **may expire at any moment**. You MUST get your own credentials registering your app here:
 
 [Facebook](https://developers.facebook.com/quickstarts/?platform=web">https://developers.facebook.com/quickstarts/?platform=web)
-[Twitter developers](https://apps.twitter.com">https://apps.twitter.com)
+
+[Twitter](https://apps.twitter.com">https://apps.twitter.com)
+
 [Youtube](https://console.developers.google.com">https://console.developers.google.com)
