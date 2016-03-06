@@ -69,8 +69,7 @@ Should produce something like this:
       ...       
 ```
 
-In order to consume the Facebook, Twitter and Youtube apis, you **must get your own credentials** (client_id, app_secret) for each one of them.
-The ones used in this example are for testing purposes only and **may expire at any moment**. You MUST get your own credentials registering your app here:
+In order to consume Facebook, Twitter and Youtube apis, you **must get your own credentials** (*client_id*, *app_secret*) for each one of the providers. The ones used in this example are for testing purposes only and **may expire at any moment**. You MUST get your own credentials registering your app here:
 
 [Facebook](https://developers.facebook.com/quickstarts/?platform=web)
 
