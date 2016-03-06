@@ -1,6 +1,12 @@
 # FeedBlender
-##### This class generates a cached json containing timeline posts from Facebook, Twitter and Instagram profiles. 
 
+FeedBlender is a social network aggregator written in PHP.
+
+### Key features
+
+- Fetches content from Facebook, Twitter, Instagram and Youtube public accounts
+- Organizes all different sources into a single and uniform structure
+- Caches all requests within a defined timespam
 
 
 ### Usage:
@@ -13,19 +19,23 @@ $feed_blender = new FeedBlender(
     'facebook'=>array(
       'client_id'=>'FACEBOOK_CLIENT_ID',
       'app_secret'=>'FACEBOOK_APP_SECRET',
-      'users'=>array('wired', 'instructables')
+      'users'=>array('mitmedialab')
     ),
     'instagram'=>array(
-      'users'=>array('arduinoorg', 'unsplash')
+      'users'=>array('unsplash','iss')
     ),
     'twitter'=>array(
       'client_id'=>'TWITTER_CLIENT_ID',
       'app_secret'=>'TWITTER_APP_SECRET',
-      'users'=>array('MongoDB', 'npmjs')
+      'users'=>array('nasa')
+    ),
+    'youtube'=>array(
+      'app_secret'=>'YOUTUBE_APP_SECRET',
+      'users'=>array('TEDEducation','Computerphile')
     )
   )
 );
-$response_json = $feed_blender->getFeed(10);
+$response_json = $feed_blender->getFeed(30);
 //Optional sorting parameter:
 //$response_json = $feed_blender->getFeed(10, 'interlaced');
 ?>
@@ -39,27 +49,29 @@ Should produce something like this:
   "message": "",
   "data": [
     {
-      "source": "facebook",
-      "username": "WIRED",
-      "link": "http://facebook.com/19440638720/posts/10153365470328721",
-      "timestamp": 1450053416,
-      "created_time": "13 Dec 2015",
-      "text": "These apps will give you stellar advice at home, and help you make tastier choices when you’re out shopping.",
-      "image": "https://fbexternal-a.akamaihd.net/safe_image.php?d=AQDTtzqZqO9OWO3b&url=http%3A%2F%2Fwww.wired.com%2Fwp-content%2Fuploads%2F2015%2F12%2Fapp-pack-food-1200x630-e1449874890918.jpg"
+      "source": "twitter",
+      "username": "NASA",
+      "id": 706291714785452032,
+      "link": "https://twitter.com/NASA/status/706291714785452032",
+      "timestamp": 1457228041,
+      "created_time": "05 Mar 2016",
+      "text": "After yrs of tests & development, scientific balloon is set to break flight duration record: https://t.co/9IdbMG8KtW https://t.co/x1sh3oA060",
+      "image": "https://pbs.twimg.com/media/Cc1AkoeWIAApEjx.jpg"
     },
     {
       "source": "facebook",
-      "username": "Ubuntu",
-      "link": "http://facebook.com/6723083591/posts/10153694239668592",
-      "timestamp": 1449794784,
-      "created_time": "10 Dec 2015",
-      "text": "GitHub Director of Community (and former Ubuntu Community Manager) Jono Bacon explains why you should go to #UbuCon in January. We can't help but agree.",
-      "image": "https://fbexternal-a.akamaihd.net/safe_image.php?d=AQBonXQFibLBUdJ7&url=http%3A%2F%2Fubucon.org%2Fmedia%2Fcms_page_media%2F1%2Fubucon-community.jpg"
-    }
-      ...   
+      "username": "MIT Media Lab",
+      "id": "51320424738_10154093003709739",
+      "link": "http://facebook.com/51320424738/posts/10154093003709739",
+      "timestamp": 1457224511,
+      "created_time": "05 Mar 2016",
+      "text": "Celebrating the Invisible Cryptologists: The Digital Currency Initiative's Gina Vargas on the African-Americans who were instrumental to developing early cryptography from WWII through 1956."
+      ...       
 ```
 
+In order to consume the Facebook, Twitter and Youtube apis, you **must get your own credentials** (client_id, app_secret) for each one of them.
+The ones used in this example are for testing purposes only and **may expire at any moment**. You MUST get your own credentials registering your app here:
 
-In order to request the Facebook and Twitter apis you must provide the corresponding pair client_id/app_secret. You can get them upon registration of your app: [Facebook developers](https://developers.facebook.com/quickstarts/?platform=web) / [Twitter developers](https://apps.twitter.com/app/new)
-
-Instagram does not require authentication for reading public timelines, although it will require user permissions (oauth2 aka. redirected user login shit) for any other simple things like filtering by hashtags, etc.
+[Facebook](https://developers.facebook.com/quickstarts/?platform=web">https://developers.facebook.com/quickstarts/?platform=web)
+[Twitter developers](https://apps.twitter.com">https://apps.twitter.com)
+[Youtube](https://console.developers.google.com">https://console.developers.google.com)

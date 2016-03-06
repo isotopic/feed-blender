@@ -2,6 +2,7 @@
 /**
  * Social media feed aggregator.
  *
+ *
  * @version 1.5
  * @author  Guilherme Cruz <guilhermecruz@gmail.com>
  * @link https://github.com/isotopic/feed-blender
@@ -18,8 +19,11 @@ class FeedBlender{
 	// Instagram accounts - credentials are NOT required
 	private $instagram_sources = NULL;
 
+	// Youtube accounts + app/secret credentials
+	private $youtube_sources = NULL;
+
 	// The minimum interval between api requests, in seconds. 600 = 10 minutes.
-	private $cache_minimum_time = 600;
+	private $cache_minimum_time = 1800;
 
 	// Used to log the time at the last request
 	private $date = NULL;
@@ -63,6 +67,11 @@ class FeedBlender{
 		&& isset($args['instagram']['users'])){
 			$this->instagram_sources = $args['instagram'];
 		}
+		if(isset($args['youtube'])  
+		&& isset($args['youtube']['app_secret'])
+		&& isset($args['youtube']['users'])){
+			$this->youtube_sources = $args['youtube'];
+		}
 		$this->checkRequirements();
 	}
 
@@ -95,7 +104,7 @@ class FeedBlender{
 	*/
 	private function checkRequirements(){
 		if(!function_exists('curl_version')){
-			throw new Exception("This program requires curl enabled.");
+			throw new Exception("This program requires the php curl extension.");
 			exit;
 		}
 	}
@@ -140,7 +149,8 @@ class FeedBlender{
 		$facebook_users = implode(",", isset($this->facebook_sources['users']) ? $this->facebook_sources['users'] : array());
 		$instagram_users = implode(",", isset($this->instagram_sources['users']) ? $this->instagram_sources['users'] : array());
 		$twitter_users = implode(",", isset($this->twitter_sources['users']) ? $this->twitter_sources['users'] : array());
-		return $facebook_users.','.$instagram_users.','.$twitter_users;
+		$youtube_users = implode(",", isset($this->youtube_sources['users']) ? $this->youtube_sources['users'] : array());
+		return $facebook_users.','.$instagram_users.','.$twitter_users.','.$youtube_users;
 	}
 
 	/**
@@ -151,6 +161,7 @@ class FeedBlender{
 		$facebook_timelines = isset( $this->facebook_sources) ? $this->getFacebookPosts() : array() ;
 		$instagram_timelines = isset( $this->instagram_sources) ? $this->getInstagramPosts() : array() ;
 		$twitter_timelines = isset( $this->twitter_sources) ? $this->getTwitterPosts() : array() ;
+		$youtube_timelines = isset( $this->youtube_sources) ? $this->getYoutubePosts() : array() ;
 
 		$blended_timelines = array();
 
@@ -171,11 +182,16 @@ class FeedBlender{
 				$biggest = count($twitter_timelines[$a]);
 			}
 		}
+		for( $a=0; $a < count($youtube_timelines); $a++){
+			if( count($youtube_timelines[$a]) > $biggest){
+				$biggest = count($youtube_timelines[$a]);
+			}
+		}
 
 		// Merge content from all sources into a single array
 		for( $a=0; $a < $biggest; $a++){
 
-			// All facebook timelines
+			// FACEBOOK specific parameters
 			for( $i=0; $i<count($facebook_timelines); $i++){
 				$timeline = $facebook_timelines[$i];
 				if($a<count($timeline)){
@@ -184,6 +200,7 @@ class FeedBlender{
 						array_push($blended_timelines, array(
 							'source'=>'facebook', 
 							'username'=>$post->from->name, 
+							'id'=>$post->id,
 							'link'=>'http://facebook.com/'.$post->from->id.'/posts/'.$id[1],
 							'timestamp'=>(int) strtotime( $post->created_time ), 
 							'created_time'=>date("d M Y", strtotime($post->created_time)), 
@@ -193,7 +210,7 @@ class FeedBlender{
 						);
 				}
 			}
-			// All instagram timelines
+			// INSTAGRAM specific parameters
 			for( $i=0; $i<count($instagram_timelines); $i++){
 				$timeline = $instagram_timelines[$i];
 				if($a<count($timeline)){
@@ -201,6 +218,7 @@ class FeedBlender{
 						array_push($blended_timelines, array(
 							'source'=>'instagram', 
 							'username'=>$post->caption->from->username, 
+							'id'=>$post->code,
 							'link'=>$post->link, 
 							'timestamp'=>(int) $post->created_time, 
 							'created_time'=>date("d M Y", $post->created_time), 
@@ -210,7 +228,7 @@ class FeedBlender{
 						);
 				}
 			}	
-			// All twitter timelines
+			// TWITTER specific parameters
 			for( $i=0; $i<count($twitter_timelines); $i++){
 				$timeline = $twitter_timelines[$i];
 				if($a<count($timeline)){
@@ -218,7 +236,8 @@ class FeedBlender{
 						array_push($blended_timelines, array(
 							'source'=>'twitter', 
 							'username'=>$post->user->screen_name, 
-							'link'=>$post->id, 
+							'id'=>$post->id,
+							'link'=>'https://twitter.com/'.$post->user->name.'/status/'.$post->id, 
 							'timestamp'=>(int) strtotime( $post->created_at ), 
 							'created_time'=>date("d M Y", strtotime($post->created_at)), 
 							'text'=>$post->text, 
@@ -227,10 +246,29 @@ class FeedBlender{
 						);
 				}
 			}	
+			// YOUTUBE specific parameters
+			for( $i=0; $i<count($youtube_timelines); $i++){
+				$timeline = $youtube_timelines[$i];
+				if($a<count($timeline)){
+					$post = $timeline[$a];
+						array_push($blended_timelines, array(
+							'source'=>'youtube', 
+							'username'=>$post->snippet->channelTitle, 
+							'id'=>$post->id->videoId,
+							'link'=>'https://www.youtube.com/watch?v='.$post->id->videoId, 
+							'timestamp'=>(int) strtotime( $post->snippet->publishedAt ), 
+							'created_time'=>date("d M Y", strtotime($post->snippet->publishedAt)), 
+							'text'=>$post->snippet->description, 
+							'image'=>$post->snippet->thumbnails->high->url
+							)
+						);
+				}
+			}
+				
 
 		}
 
-		// Content already comes interlaced. If date is defined, sort all by date.
+		// Content is already interlaced. If date is defined, sort all by date.
 		if($this->sorting=="date"){
 			usort($blended_timelines, function($a, $b) {
 			    return  $b['timestamp'] - $a['timestamp'];
@@ -258,6 +296,13 @@ class FeedBlender{
 
 
 
+
+
+
+
+
+
+
 	// FACEBOOK posts
 	private function getFacebookPosts(){
 		$timelines = array();
@@ -281,10 +326,10 @@ class FeedBlender{
 
 
 
-	// TWITTER posts - require Basic Authentication in all calls (along with a secure connection)
+	// TWITTER posts - requires Basic Authentication in all calls (along with a secure connection)
 	private function getTwitterPosts(){
 		$timelines = array();
-		// Get a valid token. This one is different because it has to be a POST + has to send the basic auth header.
+		// Get a valid token. This one is different because it has to be a POST and it has to send a basic auth header.
         $pair64 = base64_encode($this->twitter_sources['client_id'].":".$this->twitter_sources['app_secret']);
         $token_payload = $this->curlCall("https://api.twitter.com/oauth2/token", "grant_type=client_credentials", "Basic ".$pair64);
 		$token = $token_payload->access_token;
@@ -294,7 +339,7 @@ class FeedBlender{
 		}
 		// Load all timelines
 		for($a=0; $a<count($this->twitter_sources['users']); $a++){
-			$user_posts = $this->curlCall('https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name='.$this->twitter_sources['users'][$a].'&count=20&exclude_replies=true', false, "Bearer ".$token);
+			$user_posts = $this->curlCall('https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name='.$this->twitter_sources['users'][$a].'&count=20&trim_user=false&include_rts=false&exclude_replies=true', false, "Bearer ".$token);
 			if(isset($user_posts->errors)){
 				$this->message .= "Twitter api said: ".$user_posts->errors->message;
 			}else{
@@ -306,7 +351,9 @@ class FeedBlender{
 
 
 
-	// INSTAGRAM posts - this is the good guy greg, doesn't require anything
+
+
+	// INSTAGRAM posts - at the moment, instagram feeds doesn't require anything
 	private function getInstagramPosts(){
 		$timelines = array();
 		// Load all timelines
@@ -318,6 +365,47 @@ class FeedBlender{
 		}
 		return $timelines;
 	}
+
+
+
+
+
+
+
+
+	// YOUTUBE posts - requires static app token
+	private function getYoutubePosts(){
+		$timelines = array();
+
+		for($a=0; $a<count($this->youtube_sources['users']); $a++){
+
+			//First we need the channelId. 
+			$channelId = false;
+			if(strlen($this->youtube_sources['users'][$a])=='24'){
+				//Looks like it is the channelId already. (Usernames are limited to 20 characters)
+				$channelId = $this->youtube_sources['users'][$a];
+			}else{
+				//Get the channelId from the given username
+				$channel_info = $this->curlCall("https://www.googleapis.com/youtube/v3/channels?part=snippet&forUsername=".$this->youtube_sources['users'][$a]."&maxResults=1&fields=items%2Fid&key=".$this->youtube_sources['app_secret']);
+				$channelId = $channel_info->items[0]->id;
+			}
+			//Finally, get the videos
+			if($channelId){
+				$user_posts = $this->curlCall("https://www.googleapis.com/youtube/v3/search?part=snippet&order=date&channelId=".$channelId."&key=".$this->youtube_sources['app_secret']);	
+				if(isset($user_posts->items)){
+					array_push($timelines, $user_posts->items);
+				}
+			}
+
+		}
+
+		return $timelines;
+	}
+
+
+
+
+
 
 
 
