@@ -76,3 +76,9 @@ In order to consume Facebook, Twitter and Youtube apis, you **must get your own 
 [Twitter](https://apps.twitter.com)
 
 [Youtube](https://console.developers.google.com)
+
+### Vagrant
+Loading the example on scotch/box:
+```shell
+$ vagrant up
+```
