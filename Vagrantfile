@@ -1,6 +1,8 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+# Windows users may need to install Microsoft Visual Studio C++
+
 Vagrant.configure(2) do |config|
 
   config.vm.box = "scotch/box"
