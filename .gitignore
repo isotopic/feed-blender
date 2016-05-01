@@ -1,3 +1,4 @@
+.vagrant
 .DS_Store
-FeedBlender.log
-FeedBlender.json
+public/FeedBlender.log
+public/FeedBlender.json

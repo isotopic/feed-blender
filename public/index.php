@@ -100,7 +100,7 @@ $response_json = $feed_blender->getFeed(30);
 
               <pre style="max-height: none !important;"><code class="language-php"><?php 
               //This prints the content of this file until 'end-example'
-              $file = fopen("example.php","r");
+              $file = fopen(__FILE__,"r");
               $line = "";
               while(!strpos($line, 'end-example') && !feof($file)){
                 $line=fgets($file);
