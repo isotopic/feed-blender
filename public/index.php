@@ -9,7 +9,7 @@ $feed_blender = new FeedBlender(
       'users'=>array('mitmedialab')
     ),
     'instagram'=>array(
-      'users'=>array('unsplash','iss')
+      'users'=>array('unsplash')
     ),
     'twitter'=>array(
       'client_id'=>'8f4lUdOqrWR1xSiVg5kBmQhd4',
@@ -18,7 +18,7 @@ $feed_blender = new FeedBlender(
     ),
     'youtube'=>array(
       'app_secret'=>'AIzaSyBNi2C7MjGkrH0bIBq-MuPE9im7zT4iq2c',
-      'users'=>array('TEDEducation','Computerphile')
+      'users'=>array('Computerphile')
     )
   )
 );

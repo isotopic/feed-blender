@@ -12,6 +12,7 @@ Vagrant.configure(2) do |config|
   config.vm.provision "shell", inline: <<-SHELL
     echo "LC_ALL=\"en_US.UTF-8\"" >> /etc/environment
     source /etc/environment
+    echo "Address: \033[1;37m http://192.168.33.10 \033[0m"
   SHELL
 
   #config.vm.provision "shell", path: "provision.sh"
