@@ -1,8 +1,6 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-# Windows users may need to install Microsoft Visual Studio C++
-
 Vagrant.configure(2) do |config|
 
   config.vm.box = "scotch/box"
@@ -20,3 +18,10 @@ Vagrant.configure(2) do |config|
   #config.vm.provision "shell", path: "provision.sh"
 
 end
+
+
+# Windows 10 users may need to install:
+
+# 1) Microsoft Visual C++ 2010 Redistributable Package (x86)
+# 2) this patch: https://www.virtualbox.org/attachment/ticket/14040/VBox-Win10-fix-14040.exe
+
