@@ -391,14 +391,13 @@ class FeedBlender{
 			}
 			//Finally, get the videos
 			if($channelId){
-				$user_posts = $this->curlCall("https://www.googleapis.com/youtube/v3/search?part=snippet&order=date&channelId=".$channelId."&key=".$this->youtube_sources['app_secret']);	
+				$user_posts = $this->curlCall("https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&order=date&channelId=".$channelId."&key=".$this->youtube_sources['app_secret']);	
 				if(isset($user_posts->items)){
 					array_push($timelines, $user_posts->items);
 				}
 			}
 
 		}
-
 		return $timelines;
 	}
 
