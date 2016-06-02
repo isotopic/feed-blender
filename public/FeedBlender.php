@@ -221,7 +221,7 @@ class FeedBlender{
                             'link' => 'http://facebook.com/'.$post->from->id.'/posts/'.$id[1],
                             'timestamp' => (int) strtotime($post->created_time),
                             'created_time' => date('d M Y', strtotime($post->created_time)),
-                            'text' => $post->message,
+                            'text' => (property_exists($post, "message") ? $post->message : $post->description),
                             'image' => isset($post->full_picture) ? $post->full_picture : '',
                             )
                         );
